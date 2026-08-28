@@ -32,7 +32,7 @@ and verified**. Your job is Tasks 8–14.
 | --- | --- | --- | --- |
 | 1 | Project scaffold, all source code | DONE | — |
 | 2 | Unit tests (13 tests) | DONE — 13 passed | — |
-| 3 | Git repo initialized + committed | DONE | — |
+| 3 | Git repo + local commit history | DONE — nothing pushed to a server yet | — |
 | 4 | DVC init, dataset tracked + pushed | DONE — 24,998 files | — |
 | 5 | Dataset downloaded | DONE — 12,499 cat / 12,499 dog | — |
 | 6 | Model trained → `models/model.pt` | DONE — 70.2% test accuracy | — |
@@ -40,7 +40,7 @@ and verified**. Your job is Tasks 8–14.
 | 8 | Environment setup on this machine | **TODO** | Agent |
 | 9 | Build the Docker image | **TODO** | Agent |
 | 10 | Run container, verify prediction | **TODO** | Agent |
-| 11 | Create GitHub repo + push | **TODO** | `[NEEDS HUMAN]` + Agent |
+| 11 | Create GitHub repo + push (first push) | **TODO** | `[NEEDS HUMAN]` + Agent |
 | 12 | Verify CI pipeline is green | **TODO** | Agent |
 | 13 | Register self-hosted runner | **TODO** | `[NEEDS HUMAN]` |
 | 14 | Verify CD deploys + smoke test | **TODO** | Agent |
@@ -63,8 +63,15 @@ Read this so you understand what exists. Every item below is finished and verifi
 grayscale handling, split correctness) and `tests/test_inference.py` (model forward,
 probability validity, save/load round-trip). All pass. *Evidence:* run `pytest -q`.
 
-**Task 3 — Git repository.** Initialized with 9 commits on `main`, 42 tracked files.
-*Evidence:* `git log --oneline`.
+**Task 3 — Git repository (local only).** `git init` was run and all work committed to
+the `main` branch — 11 commits, 42 tracked files. The `.git/` folder travels with this
+project folder, so **this machine already has the full history**. Do not run `git init`
+again and do not re-commit existing files.
+
+**Nothing has been pushed to any server yet.** There is no `origin` remote. Creating a
+GitHub repository and pushing is Task 11. New commits you make here (for example in
+Task 14) are committed locally and then pushed like normal.
+*Evidence:* `git log --oneline` shows the history; `git remote -v` prints nothing.
 
 **Task 4 — DVC data versioning.** `dvc init` done, a local remote configured, and the
 dataset tracked. 24,998 files (848 MB) reduced to the 4-line pointer `data/raw.dvc`.
@@ -229,14 +236,26 @@ docker stop catdog && docker rm catdog
 
 ## TASK 11 — Create a GitHub repository and push
 
-**`[NEEDS HUMAN]` first.** Stop and ask the user to:
+**Objective:** connect the existing local repository to a GitHub remote and push it.
+
+The local Git history already exists (Task 3). You are **adding a remote**, not creating
+a new repository. Do not run `git init`.
+
+**Check the starting state first:**
+
+```bash
+git log --oneline | head -5     # should list existing commits
+git remote -v                   # should print nothing
+```
+
+**`[NEEDS HUMAN]` — ask the user to:**
 
 1. Go to `https://github.com/new`
 2. Create a **public** repository (public keeps GitHub Actions free)
-3. Do **not** add a README, .gitignore or licence — the repo must be empty
-4. Tell you the resulting URL
+3. Do **not** add a README, .gitignore or licence — the repo must be completely empty
+4. Give you the repository URL, plus their name and email for Git
 
-**Then, once they give you the URL**, run:
+**Then run:**
 
 ```bash
 git config user.name "THEIR NAME"
@@ -246,14 +265,22 @@ git branch -M main
 git push -u origin main
 ```
 
-Ask the user for their name and email. The build machine used a placeholder identity.
+This uploads the entire existing history in one go.
 
-**EXPECTED:** `git push` reports `branch 'main' set up to track 'origin/main'`.
+**EXPECTED:** `git push` reports `branch 'main' set up to track 'origin/main'`, and the
+files appear on GitHub.
 
 **IF IT FAILS:**
-- `remote origin already exists` → run `git remote set-url origin <URL>` instead.
-- Authentication failed → `[NEEDS HUMAN]` The user must sign in. Suggest GitHub CLI
-  (`gh auth login`) or a Personal Access Token.
+- `remote origin already exists` → use `git remote set-url origin <URL>` instead.
+- `Repository not found` → the URL is wrong, or the repo is private and unauthenticated.
+- `Authentication failed` → `[NEEDS HUMAN]` The user must sign in. Suggest
+  `gh auth login`, or a Personal Access Token as the password.
+- `Updates were rejected` → the GitHub repo is not empty. Ask the user to delete and
+  recreate it with no initial files.
+
+**Note on commit identity:** the existing commits carry a placeholder author from the
+build machine. That is harmless and does not affect marks. The `git config` commands
+above apply the user's real identity to all **new** commits.
 
 **WHEN DONE:** set row 11 to `DONE` and record the repo URL here: `________`
 
