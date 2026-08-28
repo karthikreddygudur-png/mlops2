@@ -89,6 +89,7 @@ git commit -m "Task 9 complete"
 | 7 | API verified with uvicorn | DONE — predictions served | — |
 | 8 | Environment setup on this machine | **TODO** | Agent |
 | 8.5 | Preflight: Git + GitHub readiness | **TODO** | Agent |
+| 8.6 | Preflight: Docker readiness | **TODO** | Agent |
 | 9 | Build the Docker image | **TODO** | Agent |
 | 10 | Run container, verify prediction | **TODO** | Agent |
 | 11 | Create GitHub repo + push (first push) | **TODO** | `[NEEDS HUMAN]` + Agent |
@@ -183,27 +184,24 @@ python3 -m venv .venv
 
 This downloads about 250 MB and takes several minutes. Wait for it to finish.
 
-**Step 8.3 — Verify.**
+**Step 8.3 — Verify the Python environment.**
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q          # Windows
+```
+```bash
 ./.venv/bin/python -m pytest -q                  # Linux/macOS
-docker --version
-docker run --rm hello-world
 ```
 
-**EXPECTED:**
-- pytest prints `13 passed`
-- `docker --version` prints a version number
-- `hello-world` prints "Hello from Docker!"
+**EXPECTED:** pytest prints `13 passed`.
 
 **IF IT FAILS:**
-- `docker: command not found` → Docker is not installed. `[NEEDS HUMAN]` Ask the user
-  to install Docker Desktop, or Docker Engine on Linux.
-- `Cannot connect to the Docker daemon` → the daemon is not running. `[NEEDS HUMAN]`
-  Ask the user to start Docker Desktop, or run `sudo service docker start`.
-- pytest reports fewer than 13 tests → you are in the wrong directory. `cd` to the
-  folder containing `params.yaml`.
+- Fewer than 13 tests collected, or `ModuleNotFoundError: src` → you are in the wrong
+  directory. `cd` to the folder containing `params.yaml`.
+- `No module named torch` → the install in Step 8.2 did not finish. Re-run it and wait
+  for it to complete.
+
+Docker is checked separately in Task 8.6.
 
 **WHEN DONE:** set row 8 to `DONE`.
 
@@ -297,6 +295,121 @@ Ask the user for these now and write them down here:
 **Do not guess or invent any of these.**
 
 **WHEN DONE:** set row 8.5 to `DONE`.
+
+---
+
+## TASK 8.6 — Preflight: Docker readiness
+
+**Objective:** confirm Docker can actually build and run *this* image. A version number
+alone is not enough — several things can be installed yet still fail at Task 9.
+
+Run each check and compare against EXPECTED before moving on.
+
+**Step 8.6.1 — CLI and daemon.**
+
+```bash
+docker --version
+docker info --format "{{.ServerVersion}}"
+```
+
+**EXPECTED:** a client version, and a server version. If the second command errors, the
+CLI is installed but the **daemon is not running**.
+
+**IF THE DAEMON IS NOT RUNNING** → `[NEEDS HUMAN]`:
+- Windows/macOS: ask the user to start Docker Desktop and wait for "Engine running".
+- Linux: ask them to run `sudo service docker start` or `sudo systemctl start docker`.
+- WSL: ask them to run `sudo service docker start` inside the WSL distribution.
+
+**Step 8.6.2 — Container platform must be Linux.**
+
+```bash
+docker info --format "{{.OSType}}"
+```
+
+**EXPECTED:** `linux`
+
+**IF IT SAYS `windows`** → Docker Desktop is in Windows-container mode and **cannot
+build this image**. `[NEEDS HUMAN]` Ask the user to right-click the Docker tray icon and
+choose **"Switch to Linux containers"**.
+
+**Step 8.6.3 — Compose v2 must be available.**
+
+```bash
+docker compose version
+```
+
+**EXPECTED:** version 2.x or later.
+
+**IF `docker compose` IS NOT RECOGNISED** but `docker-compose` (with a hyphen) works,
+you have the old v1. `docker-compose.yml` in this project has no `version:` key and
+expects v2. `[NEEDS HUMAN]` Ask the user to install the Compose v2 plugin, or update
+Docker Desktop.
+
+**Step 8.6.4 — Can it pull and run an image?**
+
+```bash
+docker run --rm hello-world
+```
+
+**EXPECTED:** "Hello from Docker!"
+
+**IF IT FAILS:**
+- `permission denied ... /var/run/docker.sock` (Linux) → `[NEEDS HUMAN]` The user must
+  run `sudo usermod -aG docker $USER`, then log out and back in.
+- TLS or certificate errors → the network intercepts TLS. `[NEEDS HUMAN]` Ask the user
+  for the corporate CA certificate and proxy settings.
+- Timeout reaching `registry-1.docker.io` → a proxy is required. `[NEEDS HUMAN]`
+
+**Step 8.6.5 — Enough free disk space.**
+
+The image needs roughly **5 GB** during build (PyTorch plus build cache).
+
+```powershell
+# Windows PowerShell
+[math]::Round((Get-PSDrive C).Free / 1GB, 1)
+```
+```bash
+# Linux / macOS
+df -h /var/lib/docker 2>/dev/null || df -h /
+```
+
+**EXPECTED:** at least 10 GB free, to be safe.
+
+**IF LOW** → run `docker system prune -a -f` to reclaim space, then re-check. If still
+low, `[NEEDS HUMAN]` tell the user how much is free and how much is needed.
+
+**Step 8.6.6 — Port 8000 must be free.**
+
+```powershell
+# Windows PowerShell
+Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue
+```
+```bash
+# Linux / macOS
+ss -ltn 2>/dev/null | grep ':8000' || lsof -i :8000 || echo "port 8000 is free"
+```
+
+**EXPECTED:** nothing is listening on port 8000.
+
+**IF SOMETHING IS USING IT** → stop that process, or note that you must change the port
+mapping in `docker-compose.yml` and in every `curl` command from `8000` to a free port.
+
+**Step 8.6.7 — Summary.**
+
+Report to the user a short table of what passed:
+
+| Check | Result |
+| --- | --- |
+| Docker CLI + daemon | |
+| Linux containers | |
+| Compose v2 | |
+| Pull and run | |
+| Disk space | |
+| Port 8000 free | |
+
+**Only proceed to Task 9 if every row passed.**
+
+**WHEN DONE:** set row 8.6 to `DONE`.
 
 ---
 
