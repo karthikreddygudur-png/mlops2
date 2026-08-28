@@ -23,3 +23,6 @@ htmlcov/
 .idea/
 .DS_Store
 Thumbs.db
+
+# DVC scratch files
+.dvc/tmp/
