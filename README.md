@@ -52,6 +52,7 @@ and verified**. Your job is Tasks 8–14.
 | 14 | Verify CD deploys + smoke test | **TODO** | Agent |
 | 15 | Record the demo video | **TODO** | `[NEEDS HUMAN]` |
 | 16 | Build the submission zip | **TODO** | Agent |
+| 17 | Hand over to user with submission summary | **TODO** | Agent |
 
 ---
 
@@ -742,6 +743,51 @@ Go through the list. If any line is `NO`, the assignment is not finished.
 
 Only when every row is `YES`, tell the user the assignment is complete, and remind them
 to submit **both** the zip and the video.
+
+---
+
+## TASK 17 — Hand over to the user
+
+**Objective:** tell the user clearly what to submit. Do this last, after the FINAL CHECK
+above is fully green.
+
+Give the user this summary, filling in the real values:
+
+> **Your MLOps Assignment 2 is complete. Submit these two items.**
+>
+> **1. Code and artifacts — `submission_2024AD05132.zip`**
+> Location: `<full path to the zip>`
+> Size: `<size>` MB
+> Contains: all source code, DVC / CI-CD / Docker / Compose configuration, the trained
+> model `models/model.pt`, MLflow run history, and the training and post-deployment reports.
+>
+> **2. Screen recording — `<video filename>`**
+> Location: `<full path to the video>`
+> Duration: `<mm:ss>` (must be under 5 minutes)
+> Shows the full workflow from a code change through CI, image publication, automatic
+> deployment, smoke test, and a live prediction.
+>
+> **Reference links for your submission notes:**
+> - GitHub repository: `https://github.com/<USERNAME>/<REPO>`
+> - Container image: `ghcr.io/<USERNAME>/<REPO>:latest`
+>
+> **Results achieved:**
+> - Model test accuracy: 70.2% (baseline CNN, as the assignment specifies)
+> - Unit tests: 13 passing
+> - Dataset: 24,998 images, versioned with DVC
+> - CI and CD pipelines: both verified green, and the smoke-test failure path was
+>   demonstrated and reverted
+>
+> **Before you submit, please confirm:**
+> - The video is under 5 minutes.
+> - The zip opens and contains `models/model.pt`.
+> - Your GitHub repository is public, or the grader has been granted access.
+
+**Then also tell the user about anything that did not go to plan** — any task that
+needed a workaround, and anything still outstanding. Do not claim success for a step
+that did not actually pass.
+
+**WHEN DONE:** set row 17 to `DONE`. The assignment is finished.
 
 ---
 
