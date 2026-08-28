@@ -13,6 +13,8 @@ from pathlib import Path
 
 import requests
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from src.config import CLASS_NAMES, PROJECT_ROOT, RAW_DIR
 from src.data import discover_samples
 

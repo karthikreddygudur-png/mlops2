@@ -1,11 +1,9 @@
-# Data & models are tracked by DVC, not Git.
+# Dataset is tracked by DVC; only the .dvc pointer belongs in Git.
 data/*
 !data/.gitkeep
-models/*
-!models/.gitkeep
+!data/*.dvc
 mlruns/
 reports/
-*.pt
 *.pkl
 *.h5
 
