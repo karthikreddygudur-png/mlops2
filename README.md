@@ -49,6 +49,48 @@ and verified**. Your job is Tasks 8–14.
 
 ---
 
+## What Tasks 1–7 already produced — do not redo these
+
+Read this so you understand what exists. Every item below is finished and verified.
+
+**Task 1 — Project scaffold.** All source code written and working:
+`src/config.py` (loads `params.yaml`), `src/data.py` (preprocessing, augmentation,
+80/10/10 split), `src/model.py` (`SimpleCNN`, save/load, predict), `src/train.py`
+(training + MLflow), `src/api.py` (FastAPI service). Plus `Dockerfile`,
+`docker-compose.yml`, both GitHub Actions workflows, and three scripts in `scripts/`.
+
+**Task 2 — Unit tests.** 13 tests in `tests/test_data.py` (preprocessing shape, dtype,
+grayscale handling, split correctness) and `tests/test_inference.py` (model forward,
+probability validity, save/load round-trip). All pass. *Evidence:* run `pytest -q`.
+
+**Task 3 — Git repository.** Initialized with 9 commits on `main`, 42 tracked files.
+*Evidence:* `git log --oneline`.
+
+**Task 4 — DVC data versioning.** `dvc init` done, a local remote configured, and the
+dataset tracked. 24,998 files (848 MB) reduced to the 4-line pointer `data/raw.dvc`.
+*Evidence:* `cat data/raw.dvc`, `cat .dvc/config`.
+
+**Task 5 — Dataset.** 12,499 cat and 12,499 dog images downloaded and organized into
+`data/raw/cat/` and `data/raw/dog/`. Six representative images copied to `samples/`
+for demos.
+
+**Task 6 — Model training.** `SimpleCNN` trained for 5 epochs on 5,000 images.
+**Test accuracy 70.2%**, test loss 0.5709. Saved to `models/model.pt` (0.93 MB) and
+logged to MLflow. *Evidence:* `reports/training_curves.png`,
+`reports/confusion_matrix.png`, `reports/train_metrics.json`, and `mlflow ui`.
+
+**Task 7 — API verification.** The service was run with uvicorn and confirmed working:
+`/health` returned `model_loaded: true`, `/predict` returned real labels in 24–85 ms,
+`/metrics` incremented Prometheus counters, and structured JSON request logs were
+emitted. A 50-image replay scored 68% accuracy at 27 ms mean latency.
+*Evidence:* `reports/post_deploy_metrics.json`.
+
+**What this means for you:** the model, the data, the code and the tests all work.
+If something fails in Tasks 8–16, the cause is almost certainly environment or
+configuration on this machine — not the code. Do not rewrite `src/`.
+
+---
+
 ## TASK 8 — Set up the environment
 
 **Objective:** get a working Python environment and confirm Docker is available.
