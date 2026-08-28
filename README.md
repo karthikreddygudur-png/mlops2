@@ -38,6 +38,7 @@ and verified**. Your job is Tasks 8–14.
 | 6 | Model trained → `models/model.pt` | DONE — 70.2% test accuracy | — |
 | 7 | API verified with uvicorn | DONE — predictions served | — |
 | 8 | Environment setup on this machine | **TODO** | Agent |
+| 8.5 | Preflight: Git + GitHub readiness | **TODO** | Agent |
 | 9 | Build the Docker image | **TODO** | Agent |
 | 10 | Run container, verify prediction | **TODO** | Agent |
 | 11 | Create GitHub repo + push (first push) | **TODO** | `[NEEDS HUMAN]` + Agent |
@@ -157,6 +158,97 @@ docker run --rm hello-world
 
 ---
 
+## TASK 8.5 — Preflight: Git and GitHub readiness
+
+**Objective:** confirm Git works, credentials exist and GitHub is reachable — **before**
+spending time on the Docker build. Do this now, not at Task 11.
+
+**Step 8.5.1 — Check the local repository state.**
+
+```bash
+git --version
+git log --oneline | head -3
+git remote -v
+git status --short
+```
+
+**EXPECTED:**
+- a Git version number
+- three commit lines (history came with the folder)
+- `git remote -v` prints **nothing** — no remote yet, this is correct
+- `git status --short` prints nothing, or only untracked files you did not create
+
+**IF `git log` says `not a git repository`** → the `.git/` folder did not copy across.
+`[NEEDS HUMAN]` Ask the user to re-copy the folder including hidden files, or to run
+`git init` and accept that commit history is lost.
+
+**Step 8.5.2 — Check the Git identity.**
+
+```bash
+git config user.name
+git config user.email
+```
+
+**EXPECTED:** both print a value.
+
+**IF EITHER IS EMPTY** → `[NEEDS HUMAN]` Ask the user for their name and email, then:
+
+```bash
+git config user.name "THEIR NAME"
+git config user.email "THEIR EMAIL"
+```
+
+**Step 8.5.3 — Check GitHub is reachable.**
+
+```bash
+git ls-remote https://github.com/octocat/Hello-World.git HEAD
+```
+
+**EXPECTED:** one line ending in `HEAD`.
+
+**IF IT FAILS:**
+- `Could not resolve host` → no internet, or DNS is blocked.
+- `SSL certificate problem` → the network intercepts TLS (common on corporate
+  machines). `[NEEDS HUMAN]` Ask the user for the corporate CA certificate.
+- Timeout → a proxy is required. `[NEEDS HUMAN]` Ask the user for proxy settings, then
+  `git config --global http.proxy http://<proxy>:<port>`.
+
+**Step 8.5.4 — Check stored credentials.**
+
+```bash
+git config --get credential.helper
+gh auth status
+```
+
+`gh auth status` only works if GitHub CLI is installed; if the command is not found,
+that is fine, ignore it.
+
+**EXPECTED:** either `gh auth status` reports a logged-in account, or
+`credential.helper` returns something like `manager`, `manager-core`, `store` or
+`osxkeychain`.
+
+**IF NEITHER** → the first push will prompt for credentials. That is acceptable, but
+warn the user now so they are ready. The easiest path is `gh auth login`; otherwise they
+need a Personal Access Token with `repo` and `write:packages` scopes, used in place of a
+password.
+
+**Step 8.5.5 — Collect the details needed for Task 11.**
+
+Ask the user for these now and write them down here:
+
+| Item | Value |
+| --- | --- |
+| GitHub username | `________` |
+| Repository name | `________` |
+| Git author name | `________` |
+| Git author email | `________` |
+
+**Do not guess or invent any of these.**
+
+**WHEN DONE:** set row 8.5 to `DONE`.
+
+---
+
 ## TASK 9 — Build the Docker image
 
 **Objective:** package the API and model into a container image.
@@ -262,6 +354,28 @@ git config user.name "THEIR NAME"
 git config user.email "THEIR EMAIL"
 git remote add origin https://github.com/<USERNAME>/<REPO>.git
 git branch -M main
+```
+
+**Now test before pushing anything.** These two checks catch a wrong URL or missing
+credentials without changing anything:
+
+```bash
+git ls-remote origin
+git push --dry-run origin main
+```
+
+**EXPECTED:**
+- `git ls-remote origin` succeeds. On a brand-new empty repo it prints nothing, which
+  is correct — what matters is that it does not error.
+- `git push --dry-run` prints what *would* be pushed, ending with something like
+  `* [new branch] main -> main`, and uploads nothing.
+
+**IF EITHER FAILS, do not attempt the real push.** Fix the cause first — see the
+failure list below.
+
+**Only when both succeed, push for real:**
+
+```bash
 git push -u origin main
 ```
 
