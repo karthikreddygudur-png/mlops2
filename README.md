@@ -32,7 +32,7 @@ and verified**. Your job is Tasks 8–14.
 | --- | --- | --- | --- |
 | 1 | Project scaffold, all source code | DONE | — |
 | 2 | Unit tests (13 tests) | DONE — 13 passed | — |
-| 3 | Git repo + 8 commits | DONE | — |
+| 3 | Git repo initialized + committed | DONE | — |
 | 4 | DVC init, dataset tracked + pushed | DONE — 24,998 files | — |
 | 5 | Dataset downloaded | DONE — 12,499 cat / 12,499 dog | — |
 | 6 | Model trained → `models/model.pt` | DONE — 70.2% test accuracy | — |
@@ -404,31 +404,89 @@ code to deployment.
 
 **Objective:** produce the final deliverable.
 
+### What the assignment requires
+
+The assignment (see `Assignment 2.md`, "Deliverables") asks for exactly two things:
+
+**Deliverable 1 — a zip file containing:**
+
+| Required | Files in this project |
+| --- | --- |
+| All source code | `src/`, `tests/`, `scripts/` |
+| Config — DVC | `.dvc/config`, `.dvcignore`, `data/raw.dvc` |
+| Config — CI/CD | `.github/workflows/ci.yml`, `.github/workflows/cd.yml` |
+| Config — Docker | `Dockerfile`, `.dockerignore` |
+| Config — deployment manifests | `docker-compose.yml`, `monitoring/prometheus.yml` |
+| Trained model artifacts | `models/model.pt` |
+
+Also include, as supporting evidence: `reports/confusion_matrix.png`,
+`reports/training_curves.png`, `reports/train_metrics.json`,
+`reports/post_deploy_metrics.json`, `mlruns/` (MLflow tracking store), `.git/`
+(commit history proves the Git versioning requirement), `requirements.txt`,
+`requirements-dev.txt`, `params.yaml`, `pytest.ini`, `samples/`, `README.md`.
+
+**Deliverable 2 — the screen recording** from Task 15, under 5 minutes.
+
+### Build the zip
+
 ```powershell
 # Windows PowerShell — run from the project root
 $stage = "submission_2024AD05132"
 Remove-Item -Recurse -Force $stage, "$stage.zip" -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $stage | Out-Null
-foreach ($i in 'src','tests','scripts','samples','monitoring','models','reports','.github','.dvc','Dockerfile','docker-compose.yml','requirements.txt','requirements-dev.txt','params.yaml','pytest.ini','.dockerignore','.dvcignore','.gitignore','README.md','data') {
-  if (Test-Path $i) { Copy-Item $i -Destination $stage -Recurse -Force }
-}
+$items = 'src','tests','scripts','samples','monitoring','models','reports','mlruns',
+         '.github','.dvc','.git','data','Dockerfile','docker-compose.yml',
+         'requirements.txt','requirements-dev.txt','params.yaml','pytest.ini',
+         '.dockerignore','.dvcignore','.gitignore','README.md','Assignment 2.md'
+foreach ($i in $items) { if (Test-Path $i) { Copy-Item $i -Destination $stage -Recurse -Force } }
 Remove-Item -Recurse -Force "$stage\.dvc\cache","$stage\data\raw" -ErrorAction SilentlyContinue
-Copy-Item mlruns -Destination $stage -Recurse -Force -ErrorAction SilentlyContinue
 Compress-Archive -Path "$stage\*" -DestinationPath "$stage.zip" -Force
 Remove-Item -Recurse -Force $stage
 "zip size: $([math]::Round((Get-Item "$stage.zip").Length/1MB,2)) MB"
 ```
 
-**EXPECTED:** a zip of roughly 5–20 MB.
+```bash
+# Linux / macOS — run from the project root
+zip -r submission_2024AD05132.zip . \
+  -x ".venv/*" "data/raw/*" ".dvc/cache/*" "*.log" "__pycache__/*" \
+     "*/__pycache__/*" ".pytest_cache/*"
+du -h submission_2024AD05132.zip
+```
 
-**Verify it contains** all of: `src/`, `tests/`, `scripts/`, `.github/workflows/`,
-`Dockerfile`, `docker-compose.yml`, `.dvc/config`, `data/raw.dvc`, `models/model.pt`,
-`reports/confusion_matrix.png`, `reports/training_curves.png`, `requirements.txt`.
+**EXPECTED:** a zip of roughly 5–30 MB.
 
-**It must NOT contain** `.venv/`, `data/raw/` or `.dvc/cache/`. If the zip is larger
-than 100 MB, one of those slipped in.
+### Verify the zip before submitting
 
-Submit the zip together with the video from Task 15.
+```powershell
+# Windows PowerShell
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$z = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path "submission_2024AD05132.zip"))
+'src/api.py','Dockerfile','docker-compose.yml','models/model.pt','data/raw.dvc',
+'.github/workflows/ci.yml','.github/workflows/cd.yml','requirements.txt' | ForEach-Object {
+  $n = $_; $hit = $z.Entries | Where-Object { $_.FullName -replace '\\','/' -like "*$n" }
+  "{0,-40} {1}" -f $n, $(if ($hit) { "OK" } else { "MISSING" })
+}
+$z.Dispose()
+```
+
+```bash
+# Linux / macOS
+for f in src/api.py Dockerfile docker-compose.yml models/model.pt data/raw.dvc \
+         .github/workflows/ci.yml .github/workflows/cd.yml requirements.txt; do
+  unzip -l submission_2024AD05132.zip | grep -q "$f" && echo "OK      $f" || echo "MISSING $f"
+done
+```
+
+Every line must read `OK`. If any reads `MISSING`, the zip is incomplete — fix and rebuild.
+
+**The zip must NOT contain** `.venv/`, `data/raw/` or `.dvc/cache/`. If it exceeds
+100 MB, one of those slipped in.
+
+### Submit
+
+Hand in both:
+1. `submission_2024AD05132.zip`
+2. The screen recording from Task 15 (under 5 minutes)
 
 **WHEN DONE:** set row 16 to `DONE` and tell the user the assignment is complete.
 
@@ -492,6 +550,39 @@ flowchart LR
 | `scripts/` | Dataset download, smoke test, post-deploy replay |
 | `.github/workflows/` | `ci.yml` (test + build + push), `cd.yml` (deploy + smoke) |
 | `monitoring/` | Prometheus scrape config |
+
+## Assignment module mapping
+
+How each requirement in `Assignment 2.md` is satisfied.
+
+| Module | Requirement | Implementation |
+| --- | --- | --- |
+| **M1** | Git source versioning | Git repository with incremental commits |
+| M1 | DVC dataset versioning | `dvc init`, local remote, `data/raw.dvc` tracks 24,998 images |
+| M1 | Baseline model, serialized | `SimpleCNN` in `src/model.py` → `models/model.pt` |
+| M1 | Experiment tracking | MLflow in `src/train.py`; runs, params, metrics in `mlruns/` |
+| M1 | Confusion matrix + loss curves | `reports/confusion_matrix.png`, `reports/training_curves.png` |
+| **M2** | REST API, ≥2 endpoints | `/health` and `/predict` in `src/api.py` (FastAPI) |
+| M2 | `requirements.txt`, versions pinned | Every dependency pinned with `==` |
+| M2 | Dockerfile + local verification | Multi-stage `Dockerfile`; Task 10 verifies via curl |
+| **M3** | Unit test — preprocessing | `tests/test_data.py` (8 tests on `preprocess_image`, splits) |
+| M3 | Unit test — model/inference | `tests/test_inference.py` (5 tests on forward, predict, round-trip) |
+| M3 | CI on every push/PR | `.github/workflows/ci.yml` — checkout, install, pytest, build |
+| M3 | Publish image to registry | Pushes to `ghcr.io` with `latest` and commit-SHA tags |
+| **M4** | Deployment target + manifests | `docker-compose.yml` (Compose option) |
+| M4 | CD pulls image, auto-deploys on main | `.github/workflows/cd.yml` on a self-hosted runner |
+| M4 | Smoke test, fails the pipeline | `scripts/smoke_test.py`; non-zero exit triggers rollback |
+| **M5** | Request/response logging | JSON middleware in `src/api.py`; metadata only, no image bytes |
+| M5 | Request count + latency metrics | `/metrics` via `prometheus-fastapi-instrumentator` |
+| M5 | Post-deployment performance | `scripts/replay_batch.py` → `reports/post_deploy_metrics.json` |
+
+## Data pre-processing (as specified)
+
+| Requirement | Where |
+| --- | --- |
+| 224x224 RGB | `preprocess_image()` in `src/data.py` |
+| 80/10/10 train/val/test split | `split_samples()`, configured in `params.yaml` |
+| Data augmentation | `build_train_transform()` — flip, rotation, colour jitter |
 
 ## Quick start
 
