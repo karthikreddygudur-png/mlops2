@@ -54,6 +54,29 @@ scratch, and no marks depend on accuracy. To improve it, raise `--epochs` and
 
 ## Prerequisites on this machine
 
+### TASK 0 — Restore the repository
+
+If you received `mlops-assignment2.bundle`, restore the full Git history from it:
+
+```bash
+git clone mlops-assignment2.bundle catdog-mlops
+cd catdog-mlops
+git log --oneline        # expect 5 commits
+```
+
+If you received a copied folder instead, **delete `.venv/` before doing anything** —
+it contains absolute paths and platform-specific binaries from the build machine and
+will not work here.
+
+Then set your Git identity (the build machine used a placeholder):
+
+```bash
+git config user.name "Your Name"
+git config user.email "your@email.com"
+```
+
+### Environment
+
 ```bash
 python -m venv .venv
 # Windows PowerShell: .\.venv\Scripts\Activate.ps1
