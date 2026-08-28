@@ -1,0 +1,46 @@
+name: CD
+
+# Runs on a self-hosted runner so deployment reaches the local Docker host.
+# The runner polls GitHub outbound, so no inbound firewall rule is needed.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy:
+    name: Deploy & smoke test
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+      - name: Pull the newly published image
+        run: docker compose pull api
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Deploy
+        run: docker compose up -d --remove-orphans
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Smoke test
+        run: python scripts/smoke_test.py --base-url http://localhost:8000
+
+      - name: Roll back on failure
+        if: failure()
+        run: |
+          echo "Smoke test failed - rolling back"
+          docker compose logs --tail 50 api || true
+          docker compose down || true
+          exit 1
