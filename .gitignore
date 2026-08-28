@@ -6,6 +6,7 @@ mlruns/
 reports/
 *.pkl
 *.h5
+*.log
 
 # Python
 __pycache__/
