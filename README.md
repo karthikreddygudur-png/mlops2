@@ -99,14 +99,12 @@ python -m src.train --epochs 3 --subset-per-class 2000
 configured in `.dvc/config` is a local folder on the original build machine, so
 `dvc pull` will not work here.
 
-You do **not** need the dataset for Tasks 8–13. The trained model is already committed.
-Only fetch it if you want to retrain, or to use real images in the demo:
+You do **not** need the dataset for Tasks 8–13. The trained model is committed, and
+six demo images ship in `samples/`. Only fetch the full dataset if you want to retrain:
 
 ```bash
 python scripts/download_data.py     # ~825 MB download, writes data/raw/{cat,dog}
 ```
-
-Without it, use any cat or dog JPEG for the `curl` prediction tests below.
 
 ## TASK 8 — Build the Docker image
 
@@ -131,7 +129,8 @@ Expected: `{"status":"ok","model_loaded":true,"requests_served":0}`
 empty at build time — fix it and rebuild.
 
 ```bash
-curl -F "file=@data/raw/dog/1.jpg" http://localhost:8000/predict
+curl -F "file=@samples/dog_10.jpg" http://localhost:8000/predict
+curl -F "file=@samples/cat_10.jpg" http://localhost:8000/predict
 curl http://localhost:8000/metrics | head -20
 docker logs catdog | tail -20
 docker stop catdog
