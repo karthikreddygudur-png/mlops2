@@ -3,7 +3,7 @@ data/*
 !data/.gitkeep
 !data/*.dvc
 mlruns/
-reports/
+reports/junit.xml
 *.pkl
 *.h5
 *.log

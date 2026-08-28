@@ -18,12 +18,12 @@ below, in order.**
 | # | Task | State | Needs Docker |
 | --- | --- | --- | --- |
 | 1 | Project scaffold, all source code | DONE | No |
-| 2 | Unit tests (13 tests) | DONE — all pass | No |
+| 2 | Unit tests (13 tests) | DONE — 13 passed | No |
 | 3 | Git repo + commits | DONE | No |
-| 4 | DVC init + dataset tracked | DONE | No |
-| 5 | Dataset downloaded (24,998 images) | DONE | No |
-| 6 | Model trained to `models/model.pt` | DONE | No |
-| 7 | API verified with uvicorn | DONE | No |
+| 4 | DVC init, dataset tracked + pushed | DONE — 24,998 files, 848 MB | No |
+| 5 | Dataset downloaded | DONE — 12,499 cat / 12,499 dog | No |
+| 6 | Model trained to `models/model.pt` | DONE — **70.2% test accuracy** | No |
+| 7 | API verified with uvicorn | DONE — real predictions served | No |
 | 8 | Build the Docker image | **TODO** | Yes |
 | 9 | Run container, verify prediction | **TODO** | Yes |
 | 10 | Push to GitHub | **TODO** | No |
@@ -31,6 +31,26 @@ below, in order.**
 | 12 | Register self-hosted runner | **TODO** | Yes |
 | 13 | Verify CD deploys + smoke test | **TODO** | Yes |
 | 14 | Record the demo video | **TODO** | Yes |
+
+## Verified results on the build machine
+
+Reproduce any of these to confirm the environment is sound before starting Task 8.
+
+| Check | Result |
+| --- | --- |
+| `pytest -v` | 13 passed |
+| Training (5 epochs, 5,000 images) | test accuracy **0.7020**, test loss 0.5709 |
+| `models/model.pt` | 0.93 MB, committed to Git |
+| MLflow run `simple-cnn-baseline` | logged with params, metrics, confusion matrix, loss curves |
+| `GET /health` | `{"status":"ok","model_loaded":true,"requests_served":0}` |
+| `POST /predict` | returns label + probabilities, 24–85 ms |
+| `GET /metrics` | Prometheus counters increment per request |
+| `scripts/replay_batch.py --limit 50` | accuracy 0.68, mean latency 27.4 ms, p95 37.8 ms |
+
+Accuracy of ~70% is expected: the assignment asks for a *baseline* CNN trained from
+scratch, and no marks depend on accuracy. To improve it, raise `--epochs` and
+`--subset-per-class`, or swap in a pretrained backbone.
+
 
 ## Prerequisites on this machine
 
@@ -49,6 +69,21 @@ If `models/model.pt` did not come across with the project, regenerate it:
 python scripts/download_data.py
 python -m src.train --epochs 3 --subset-per-class 2000
 ```
+
+### About the dataset on this machine
+
+`data/raw/` is **not** in Git — only the `data/raw.dvc` pointer is. The DVC remote
+configured in `.dvc/config` is a local folder on the original build machine, so
+`dvc pull` will not work here.
+
+You do **not** need the dataset for Tasks 8–13. The trained model is already committed.
+Only fetch it if you want to retrain, or to use real images in the demo:
+
+```bash
+python scripts/download_data.py     # ~825 MB download, writes data/raw/{cat,dog}
+```
+
+Without it, use any cat or dog JPEG for the `curl` prediction tests below.
 
 ## TASK 8 — Build the Docker image
 
