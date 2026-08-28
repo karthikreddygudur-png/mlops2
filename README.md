@@ -645,6 +645,8 @@ Hand in both:
 | `POST /predict` | label + probabilities, 24–85 ms |
 | `GET /metrics` | Prometheus counters increment per request |
 | `scripts/replay_batch.py --limit 50` | accuracy 0.68, mean latency 27.4 ms |
+| `scripts/smoke_test.py` (service up) | `[PASS] smoke test succeeded`, exit code **0** |
+| `scripts/smoke_test.py` (service down) | `[FAIL] ...`, exit code **1** — proves the pipeline gate works |
 
 About 70% accuracy is expected and fine. The assignment asks for a *baseline* CNN
 trained from scratch, and no marks depend on accuracy.
