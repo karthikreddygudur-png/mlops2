@@ -10,14 +10,25 @@ experiment tracking, data versioning, CI/CD and post-deployment monitoring.
 # READ THIS FIRST — INSTRUCTIONS FOR THE AI AGENT
 
 You are continuing a part-finished university assignment. Tasks 1–7 are **already done
-and verified**. Your job is Tasks 8–14.
+and verified**. Your job is Tasks 8 to 17.
+
+## Start here, every session
+
+Before doing anything else:
+
+1. Read the **Status Board** below.
+2. Find the **first row that says `TODO`**.
+3. Start at that task. Everything above it is already finished — do not redo it.
+4. Tell the user which task you are starting.
+
+This works whether it is your first session or you are resuming later.
 
 ## Rules you must follow
 
 1. **Work through tasks in numerical order.** Do not skip ahead.
 2. **Run exactly one task at a time.** Finish it before starting the next.
-3. **After finishing a task, edit the Status Board below** and change that row's
-   `TODO` to `DONE`. This is how you and the user know where things stand.
+3. **After finishing a task, update the Status Board immediately.** Do not batch these
+   up. See "How to update the Status Board" below for exactly how.
 4. **If a command's output does not match "EXPECTED", stop.** Read the "IF IT FAILS"
    note for that task. Do not continue to the next task until it matches.
 5. **Tasks marked `[NEEDS HUMAN]` cannot be done by you.** Stop, tell the user exactly
@@ -30,6 +41,40 @@ and verified**. Your job is Tasks 8–14.
    exact error, and what you already tried. Guessing makes things worse.
 9. **Never ask the user to give you a password, token or secret.** If a command needs
    one, tell them to type it directly into the terminal themselves.
+
+## How to update the Status Board
+
+The Status Board is a table in **this file, `README.md`**. Edit it directly.
+
+For example, after finishing Task 9, find this line:
+
+```
+| 9 | Build the Docker image | **TODO** | Agent |
+```
+
+and change it to:
+
+```
+| 9 | Build the Docker image | DONE | Agent |
+```
+
+Add a short result where it is useful, for example
+`DONE — image 1.9 GB` or `DONE — CI green`.
+
+If a task **failed** and you had to stop, mark it so the state is not lost:
+
+```
+| 9 | Build the Docker image | BLOCKED — see note below | Agent |
+```
+
+and write one line under the board explaining what blocked it.
+
+Then commit the change so the progress is recorded:
+
+```bash
+git add README.md
+git commit -m "Task 9 complete"
+```
 
 ## Status Board — keep this updated
 
