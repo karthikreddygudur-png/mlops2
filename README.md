@@ -25,6 +25,11 @@ and verified**. Your job is Tasks 8–14.
 6. **Never invent a GitHub username or repository name.** Ask the user for it.
 7. **Do not modify files in `src/`, `tests/` or `.github/`** unless a task says to.
    The code is working and verified.
+8. **If you are stuck, stop and ask.** After two failed attempts at the same step, do
+   not keep trying variations. Report to the user: which task, the exact command, the
+   exact error, and what you already tried. Guessing makes things worse.
+9. **Never ask the user to give you a password, token or secret.** If a command needs
+   one, tell them to type it directly into the terminal themselves.
 
 ## Status Board — keep this updated
 
@@ -404,13 +409,30 @@ above apply the user's real identity to all **new** commits.
 
 **Objective:** confirm tests run and the image is published automatically.
 
-Ask the user to open `https://github.com/<USERNAME>/<REPO>/actions`. The **CI** workflow
-starts by itself after the push.
+**How to check the result.** You cannot see a browser. Use one of these:
+
+*Option A — if GitHub CLI is installed (preferred, you can do this yourself):*
+
+```bash
+gh run list --limit 5
+```
+
+Repeat this every minute or two until the CI run shows `completed  success`.
+
+*Option B — if `gh` is not installed:* `[NEEDS HUMAN]` Ask the user to open
+`https://github.com/<USERNAME>/<REPO>/actions` and tell you whether both jobs are green.
+Do not guess or assume the result.
+
+CI takes 5–8 minutes. Wait; do not re-run it.
 
 **EXPECTED:** two jobs, `test` then `build-and-push`, both green. The image then appears
 under the repository's **Packages** section.
 
-CI takes 5–8 minutes. Wait; do not re-run it.
+**To read a failure log yourself (if `gh` is available):**
+
+```bash
+gh run view --log-failed
+```
 
 **IF IT FAILS:**
 - `denied: permission_denied` or `403` in `build-and-push` → `[NEEDS HUMAN]` Ask the
@@ -454,11 +476,25 @@ Ask them to:
 
 **Step 14.1 — Deploy manually once, to confirm Compose works.**
 
+First log in to the container registry, otherwise the pull will fail:
+
+```bash
+docker login ghcr.io -u <USERNAME>
+```
+
+When prompted for a password, the user must paste a **Personal Access Token** with the
+`read:packages` scope — not their GitHub password. `[NEEDS HUMAN]` Ask the user to type
+it into the terminal themselves. **Never ask them to send you a token.**
+
+If the package was made public in Task 12, `docker login` is not required and you can
+skip it.
+
 ```powershell
 # Windows PowerShell
 $env:IMAGE = "ghcr.io/<USERNAME>/<REPO>:latest"
 docker compose pull
 docker compose up -d
+Start-Sleep -Seconds 15
 .\.venv\Scripts\python.exe scripts\smoke_test.py --base-url http://localhost:8000
 ```
 ```bash
@@ -466,10 +502,15 @@ docker compose up -d
 export IMAGE=ghcr.io/<USERNAME>/<REPO>:latest
 docker compose pull
 docker compose up -d
+sleep 15
 ./.venv/bin/python scripts/smoke_test.py --base-url http://localhost:8000
 ```
 
 **EXPECTED:** last line reads `[PASS] smoke test succeeded`
+
+**IF `docker compose pull` FAILS** with `denied` or `manifest unknown` → the image is
+private or was never published. Go back and confirm Task 12 finished, and that the
+package visibility was set to Public.
 
 **Step 14.2 — Now prove it happens automatically.**
 
@@ -478,29 +519,74 @@ git commit --allow-empty -m "Trigger CI/CD pipeline"
 git push
 ```
 
-Watch the Actions tab. **CI** runs first, then **CD** starts on the self-hosted runner,
-pulls the new image, redeploys, and runs the smoke test.
+**CI** runs first, then **CD** starts on the self-hosted runner, pulls the new image,
+redeploys, and runs the smoke test.
+
+**How to check:**
+
+```bash
+gh run list --limit 5        # if GitHub CLI is available
+docker compose ps            # container should show as running
+docker compose images        # confirms which image tag is deployed
+```
+
+If `gh` is unavailable, `[NEEDS HUMAN]` ask the user to check the Actions tab.
 
 **EXPECTED:** both workflows green, and `docker compose ps` shows a running container.
 
-**Step 14.3 — Prove the smoke test can fail the pipeline.** The assignment requires
-this. In `src/api.py`, find the `/health` handler and temporarily change `status="ok"`
-to `status="broken"`, then:
+**IF CD NEVER STARTS** → the self-hosted runner is offline. Go back to Task 13 and ask
+the user to confirm the runner shows **Idle** in GitHub.
 
-```bash
-git add src/api.py && git commit -m "Temporarily break health check" && git push
+**Step 14.3 — Prove the smoke test can fail the pipeline.** The assignment explicitly
+requires this.
+
+Open `src/api.py` and find this block:
+
+```python
+@app.get("/health", response_model=HealthResponse, tags=["ops"])
+async def health() -> HealthResponse:
+    return HealthResponse(
+        status="ok",
+        model_loaded=STATE["model"] is not None,
+        requests_served=int(STATE["requests"]),
+    )
 ```
 
-**EXPECTED:** CD fails at the smoke-test step and the deployment is torn down.
+Change **exactly one line** — replace:
 
-**Then revert immediately:**
+```python
+        model_loaded=STATE["model"] is not None,
+```
+
+with:
+
+```python
+        model_loaded=False,
+```
+
+This makes `smoke_test.py` fail at its `model_loaded` check and return exit code 1,
+which fails the pipeline. Do **not** change `status="ok"` instead — the smoke test only
+inspects the HTTP status code and `model_loaded`, so changing the status text would
+change nothing and the pipeline would stay green.
+
+```bash
+git add src/api.py
+git commit -m "Temporarily break health check to prove smoke test gate"
+git push
+```
+
+**EXPECTED:** CI passes, then **CD fails** at the `Smoke test` step, and the
+`Roll back on failure` step runs `docker compose down`.
+
+**Then revert immediately — do not leave the code broken:**
 
 ```bash
 git revert --no-edit HEAD
 git push
 ```
 
-Confirm CD goes green again before continuing.
+Confirm CD goes green again, and that `docker compose ps` shows the container running,
+before moving on.
 
 **WHEN DONE:** set row 14 to `DONE`.
 
@@ -630,6 +716,32 @@ Hand in both:
 2. The screen recording from Task 15 (under 5 minutes)
 
 **WHEN DONE:** set row 16 to `DONE` and tell the user the assignment is complete.
+
+---
+
+## FINAL CHECK — all of this must be true before submitting
+
+Go through the list. If any line is `NO`, the assignment is not finished.
+
+| # | Check | How to confirm |
+| --- | --- | --- |
+| 1 | All status board rows say `DONE` | Read the board at the top |
+| 2 | Unit tests pass | `pytest -q` → `13 passed` |
+| 3 | Docker image builds | `docker images catdog-api` lists it |
+| 4 | Container serves predictions | `curl .../predict` returns a label |
+| 5 | Code is on GitHub | `git remote -v` shows origin; repo has files |
+| 6 | CI workflow ran green | Actions tab, or `gh run list` |
+| 7 | Image published to GHCR | Repository → Packages |
+| 8 | Self-hosted runner registered | Settings → Actions → Runners shows Idle |
+| 9 | CD deployed automatically | CD workflow green after a push |
+| 10 | Smoke test passed in the pipeline | CD log shows `[PASS] smoke test succeeded` |
+| 11 | Smoke test failure demonstrated | Task 14.3 produced a red CD run |
+| 12 | `src/api.py` reverted after Task 14.3 | `git log` shows the revert; CD green again |
+| 13 | Video recorded, under 5 minutes | Check the file duration |
+| 14 | Submission zip built and verified | Task 16 verification printed all `OK` |
+
+Only when every row is `YES`, tell the user the assignment is complete, and remind them
+to submit **both** the zip and the video.
 
 ---
 
