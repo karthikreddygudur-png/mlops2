@@ -36,6 +36,10 @@ This works whether it is your first session or you are resuming later.
 6. **Never invent a GitHub username or repository name.** Ask the user for it.
 7. **Do not modify files in `src/`, `tests/` or `.github/`** unless a task says to.
    The code is working and verified.
+7a. **Never change the pinned versions in `requirements.txt` or `requirements-dev.txt`.**
+   The assignment is marked on reproducible version pinning. If an install fails, the
+   cause is almost always the wrong Python version — see Task 8.0. Fix the interpreter,
+   not the pins. If you believe a pin genuinely must change, stop and ask the user first.
 8. **If you are stuck, stop and ask.** After two failed attempts at the same step, do
    not keep trying variations. Report to the user: which task, the exact command, the
    exact error, and what you already tried. Guessing makes things worse.
@@ -87,9 +91,9 @@ git commit -m "Task 9 complete"
 | 5 | Dataset downloaded | DONE — 12,499 cat / 12,499 dog | — |
 | 6 | Model trained → `models/model.pt` | DONE — 70.2% test accuracy | — |
 | 7 | API verified with uvicorn | DONE — predictions served | — |
-| 8 | Environment setup on this machine | **TODO** | Agent |
-| 8.5 | Preflight: Git + GitHub readiness | **TODO** | Agent |
-| 8.6 | Preflight: Docker readiness | **TODO** | Agent |
+| 8 | Environment setup on this machine | DONE | Agent |
+| 8.5 | Preflight: Git + GitHub readiness | DONE | Agent |
+| 8.6 | Preflight: Docker readiness | BLOCKED — daemon not running | Agent |
 | 9 | Build the Docker image | **TODO** | Agent |
 | 10 | Run container, verify prediction | **TODO** | Agent |
 | 11 | Create GitHub repo + push (first push) | **TODO** | `[NEEDS HUMAN]` + Agent |
@@ -101,6 +105,8 @@ git commit -m "Task 9 complete"
 | 17 | Hand over to user with submission summary | **TODO** | Agent |
 
 ---
+
+Blocked note: Docker daemon is not running on this machine; please start Docker Desktop (Windows) and wait for the engine to report "Engine running", then re-run Task 8.6.
 
 ## What Tasks 1–7 already produced — do not redo these
 
@@ -153,7 +159,49 @@ configuration on this machine — not the code. Do not rewrite `src/`.
 
 ## TASK 8 — Set up the environment
 
-**Objective:** get a working Python environment and confirm Docker is available.
+**Objective:** get a working Python environment.
+
+**Step 8.0 — Check the Python version FIRST. This is the most common failure.**
+
+```bash
+python --version
+```
+
+**EXPECTED: Python 3.12.x**
+
+This project is pinned to library versions that ship pre-built wheels for **Python
+3.12**. It was built and fully verified on Python 3.12.10.
+
+**IF THE VERSION IS NOT 3.12** (for example 3.13 or 3.14), **stop now.** Installation
+will appear to work, then fail — pip cannot find wheels, falls back to compiling from
+source, and you will see symptoms like:
+
+```
+Downloading numpy-2.1.3.tar.gz          <- a .tar.gz instead of a .whl means source build
+ERROR: No matching distribution found for torchvision==0.20.1
+```
+
+**Do NOT fix this by editing `requirements.txt`.** The assignment (M2) explicitly
+requires pinned versions for reproducibility, and changing them loses marks. It also
+risks a version combination that has never been tested.
+
+**The correct fix** — `[NEEDS HUMAN]` ask the user to install Python 3.12 from
+`https://www.python.org/downloads/release/python-31210/`, then create the virtual
+environment with that interpreter specifically:
+
+```powershell
+# Windows PowerShell — use the py launcher to pick 3.12 explicitly
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe --version      # must print 3.12.x
+```
+```bash
+# Linux / macOS
+python3.12 -m venv .venv
+./.venv/bin/python --version              # must print 3.12.x
+```
+
+If Python 3.12 genuinely cannot be installed, tell the user. Do not proceed by loosening
+the pins without their explicit agreement.
 
 **Step 8.1 — Delete the copied virtual environment.** It came from another machine and
 contains hardcoded paths that will not work here.
@@ -169,20 +217,37 @@ rm -rf .venv
 
 **Step 8.2 — Create a fresh environment and install dependencies.**
 
+Use the **Python 3.12** interpreter confirmed in Step 8.0.
+
 ```powershell
 # Windows PowerShell
-python -m venv .venv
+py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-dev.txt
 ```
 ```bash
 # Linux / macOS
-python3 -m venv .venv
+python3.12 -m venv .venv
 ./.venv/bin/pip install --upgrade pip
 ./.venv/bin/pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-dev.txt
 ```
 
+The `--extra-index-url` is **required** — it is where the CPU-only torch wheels live.
+Without it, pip either fails to find `torch==2.5.1` or downloads the much larger
+CUDA build.
+
 This downloads about 250 MB and takes several minutes. Wait for it to finish.
+
+**HEALTHY SIGNS:** lines reading `Downloading torch-2.5.1+cpu-cp312-...whl` — a `.whl`
+file, and `cp312` confirming Python 3.12.
+
+**WARNING SIGNS — stop and re-check Step 8.0:**
+- any `Downloading <package>.tar.gz` followed by "Building wheel" — that is a source
+  build, meaning no matching wheel exists for this Python version
+- `ERROR: No matching distribution found for ...`
+- `error: Microsoft Visual C++ 14.0 or greater is required`
+
+All three mean the Python version is wrong. Fix the interpreter, not the pins.
 
 **Step 8.3 — Verify the Python environment.**
 
