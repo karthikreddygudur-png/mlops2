@@ -100,9 +100,7 @@ CI and CD never communicate directly. CI's job ends at *image published*; CD's b
 | Request count and latency | `/metrics` via `prometheus-fastapi-instrumentator`, scraped by Prometheus |
 | Post-deployment tracking | `scripts/replay_batch.py` replays labelled images against the live service |
 
----
-
-## Data pre-processing (as specified)
+### Data pre-processing (as specified)
 
 | Requirement | Implementation |
 | --- | --- |
