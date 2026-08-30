@@ -93,7 +93,7 @@ git commit -m "Task 9 complete"
 | 7 | API verified with uvicorn | DONE — predictions served | — |
 | 8 | Environment setup on this machine | DONE | Agent |
 | 8.5 | Preflight: Git + GitHub readiness | DONE | Agent |
-| 8.6 | Preflight: Docker readiness | BLOCKED — daemon not running | Agent |
+| 8.6 | Preflight: Docker readiness | DONE | Agent |
 | 9 | Build the Docker image | **TODO** | Agent |
 | 10 | Run container, verify prediction | **TODO** | Agent |
 | 11 | Create GitHub repo + push (first push) | **TODO** | `[NEEDS HUMAN]` + Agent |
@@ -106,7 +106,7 @@ git commit -m "Task 9 complete"
 
 ---
 
-Blocked note: Docker daemon is not running on this machine; please start Docker Desktop (Windows) and wait for the engine to report "Engine running", then re-run Task 8.6.
+Docker daemon verified running and `hello-world` ran successfully.
 
 ## What Tasks 1–7 already produced — do not redo these
 
