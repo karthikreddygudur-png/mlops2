@@ -54,6 +54,175 @@ that builds, ships, deploys and watches it.
 
 ```mermaid
 flowchart LR
+    A[git push] --> B[CI: pytest]
+    B -->|pass| C[docker build]
+    C --> D[(GHCR registry)]
+    D --> E[CD: self-hosted runner]
+    E --> F[docker compose up]
+    F --> G{smoke test}
+    G -->|pass| H[Live API :8000]
+    G -->|fail| I[Roll back<br/>pipeline red]
+    H --> J[/metrics → Prometheus/]
+```
+
+CI and CD never communicate directly. CI's job ends at *image published*; CD's begins at
+*image available*. The registry is the only contract between them.
+
+---
+
+## Requirement mapping
+
+### M1 — Model Development & Experiment Tracking
+
+| Requirement | Implementation |
+| --- | --- |
+| Git source versioning | Git repository with incremental commit history |
+| DVC dataset versioning | `dvc init`, local remote, `data/raw.dvc` tracks 24,998 images (848 MB) reduced to a 4-line pointer |
+| Baseline model | `SimpleCNN` — four Conv/BatchNorm/ReLU/MaxPool blocks, `src/model.py` |
+| Serialized format | `models/model.pt` (PyTorch checkpoint, 978,168 bytes) |
+| Experiment tracking | MLflow — runs, parameters, per-epoch metrics, artifacts in `mlruns/` |
+| Confusion matrix, loss curves | `reports/confusion_matrix.png`, `reports/training_curves.png` |
+
+### M2 — Model Packaging & Containerization
+
+| Requirement | Implementation |
+| --- | --- |
+| REST API, two endpoints | FastAPI — `GET /health`, `POST /predict` in `src/api.py` |
+| Class probabilities and label | Returns `label`, `probabilities`, `latency_ms`, `request_id` |
+| `requirements.txt` | All dependencies pinned with `==` |
+| Containerization | Multi-stage `Dockerfile`, non-root user, `HEALTHCHECK` declared |
+| Local verification | Verified with `curl` — see Results below |
+
+### M3 — CI Pipeline
+
+| Requirement | Implementation |
+| --- | --- |
+| Unit test, pre-processing | `tests/test_data.py` — 8 tests on `preprocess_image()` and split logic |
+| Unit test, model/inference | `tests/test_inference.py` — 5 tests on forward pass, prediction, save/load |
+| CI on every push/PR | `.github/workflows/ci.yml` — checkout, install, pytest, docker build |
+| Artifact publishing | Pushes to `ghcr.io` with `latest` and commit-SHA tags |
+
+### M4 — CD Pipeline & Deployment
+
+| Requirement | Implementation |
+| --- | --- |
+| Deployment target | Docker Compose — `docker-compose.yml` |
+| Pull image from registry | `docker compose pull` in `.github/workflows/cd.yml` |
+| Auto-deploy on main | Triggered by `workflow_run` on CI success, executed on a self-hosted runner |
+| Smoke test | `scripts/smoke_test.py` — polls `/health`, then a real prediction |
+| Fail the pipeline | Non-zero exit triggers `docker compose down` and marks the run failed |
+
+### M5 — Monitoring, Logs & Submission
+
+| Requirement | Implementation |
+| --- | --- |
+| Request/response logging | Structured JSON middleware — method, path, status, latency, request ID |
+| Excluding sensitive data | Image bytes are never logged; only size in bytes is recorded |
+| Request count and latency | `/metrics` via `prometheus-fastapi-instrumentator`, scraped by Prometheus |
+| Post-deployment tracking | `scripts/replay_batch.py` replays labelled images against the live service |
+
+---
+
+## Data pre-processing (as specified)
+
+| Requirement | Implementation |
+| --- | --- |
+| 224×224 RGB | `preprocess_image()` in `src/data.py` |
+| 80/10/10 split | `split_samples()`, seeded for reproducibility |
+| Data augmentation | Random horizontal flip, ±15° rotation, colour jitter — training split only |
+
+---
+
+## Results
+
+### Model
+
+| Metric | Value |
+| --- | --- |
+| Test accuracy | **70.2%** |
+| Test loss | 0.5709 |
+| Training set | 5,000 images (2,500 per class), 5 epochs, CPU |
+| Checkpoint size | 978,168 bytes |
+
+Accuracy is modest by design — the assignment asks for a *baseline* CNN trained from
+scratch, and no marks depend on the figure. The confusion matrix shows a bias toward
+predicting "cat" (86% recall on cats, 55% on dogs), consistent with a short training
+run.
+
+### Pipeline
+
+| Check | Result |
+| --- | --- |
+| Unit tests | 13 passed |
+| Dataset versioned | 24,998 files, 848 MB |
+| `GET /health` | `{"status":"ok","model_loaded":true,"requests_served":0}` |
+| `POST /predict` | Valid label and probabilities, 24–85 ms |
+| `GET /metrics` | Prometheus counters increment per request |
+| Smoke test, service up | `[PASS] smoke test succeeded`, exit code **0** |
+| Smoke test, service down | `[FAIL] ...`, exit code **1** — proves the pipeline gate |
+| Post-deploy replay (50 images) | 68% accuracy, 27.4 ms mean, 37.8 ms p95 |
+
+---
+
+## Repository structure
+
+```
+src/
+  config.py        Loads params.yaml, shared constants
+  data.py          Pre-processing, augmentation, splitting
+  model.py         SimpleCNN, save/load, prediction
+  train.py         Training loop with MLflow logging
+  api.py           FastAPI service
+tests/
+  test_data.py     Pre-processing unit tests
+  test_inference.py Model and inference unit tests
+scripts/
+  download_data.py Dataset acquisition
+  smoke_test.py    Post-deploy health and prediction gate
+  replay_batch.py  Post-deployment accuracy tracking
+.github/workflows/
+  ci.yml           Test, build, publish
+  cd.yml           Pull, deploy, smoke test, roll back
+monitoring/
+  prometheus.yml   Scrape configuration
+models/model.pt    Trained checkpoint
+reports/           Confusion matrix, loss curves, metrics
+mlruns/            MLflow tracking store
+data/raw.dvc       DVC pointer to the dataset
+Dockerfile         Multi-stage container build
+docker-compose.yml Deployment manifest
+params.yaml        Hyperparameters
+```
+---
+
+## Submission links
+
+| Item | Link |
+| --- | --- |
+| **GitHub repository** | [https://github.com/karthikreddygudur-png/mlops2/](https://github.com/karthikreddygudur-png/mlops2/) |
+| **Demo video** | [https://drive.google.com/drive/folders/1nflLi4YEOY58Ej-JL3WuyVbdfK5RDrKl?usp=sharing](https://drive.google.com/drive/folders/1nflLi4YEOY58Ej-JL3WuyVbdfK5RDrKl?usp=sharing) |
+| **Container image** | `ghcr.io/karthikreddygudur-png/mlops2:latest` |
+| **CI/CD pipelines** | [https://github.com/karthikreddygudur-png/mlops2/actions](https://github.com/karthikreddygudur-png/mlops2/actions) |
+| **Published package** | [https://github.com/karthikreddygudur-png?tab=packages](https://github.com/karthikreddygudur-png?tab=packages) |
+
+---
+
+## Overview
+
+A binary image classifier (cat vs dog) for a pet adoption platform, delivered as a
+containerised REST API with a complete MLOps pipeline around it: dataset versioning,
+experiment tracking, automated testing, container publishing, continuous deployment
+with a smoke-test gate, and post-deployment monitoring.
+
+The model is deliberately a small baseline. The substance of the work is the pipeline
+that builds, ships, deploys and watches it.
+
+---
+
+## Pipeline architecture
+
+```mermaid
+flowchart LR
    A[git push] --> B[CI: pytest]
    B -->|pass| C[docker build]
    C --> D[(GHCR registry)]
