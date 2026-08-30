@@ -1,0 +1,11 @@
+﻿{
+  "agentId": 4,
+  "agentName": "mlops2-runner-win",
+  "poolId": 1,
+  "poolName": "Default",
+  "serverUrl": "https://pipelinesghubeus23.actions.githubusercontent.com/SDvIYscAVFoCA1umVmAyDkgpTmEaiLj9l03v7ZBQgn5AlsBFzR/",
+  "gitHubUrl": "https://github.com/karthikreddygudur-png/mlops2",
+  "workFolder": "_work",
+  "useV2Flow": true,
+  "serverUrlV2": "https://broker.actions.githubusercontent.com/"
+}

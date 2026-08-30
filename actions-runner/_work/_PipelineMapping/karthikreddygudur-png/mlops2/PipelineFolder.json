@@ -1,0 +1,12 @@
+﻿{
+  "repositoryName": "karthikreddygudur-png/mlops2",
+  "pipelineDirectory": "mlops2",
+  "workspaceDirectory": "mlops2\\mlops2",
+  "repositories": {
+    "karthikreddygudur-png/mlops2": {
+      "repositoryPath": "mlops2\\mlops2",
+      "lastRunOn": "08/30/2026 18:48:41 +05:30"
+    }
+  },
+  "lastRunOn": "08/30/2026 18:48:41 +05:30"
+}

@@ -1,0 +1,413 @@
+{
+  "summary": {
+    "total": 50,
+    "scored": 50,
+    "errors": 0,
+    "accuracy": 0.68,
+    "mean_latency_ms": 27.42,
+    "p95_latency_ms": 37.78,
+    "mean_confidence": 0.6553
+  },
+  "results": [
+    {
+      "file": "6897.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.664967,
+      "latency_ms": 39.76,
+      "correct": false
+    },
+    {
+      "file": "8980.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.647533,
+      "latency_ms": 30.99,
+      "correct": false
+    },
+    {
+      "file": "8736.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.945077,
+      "latency_ms": 26.95,
+      "correct": false
+    },
+    {
+      "file": "8574.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.714495,
+      "latency_ms": 25.12,
+      "correct": true
+    },
+    {
+      "file": "529.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.814875,
+      "latency_ms": 25.79,
+      "correct": true
+    },
+    {
+      "file": "2654.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.632716,
+      "latency_ms": 20.99,
+      "correct": true
+    },
+    {
+      "file": "3140.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.614705,
+      "latency_ms": 18.03,
+      "correct": false
+    },
+    {
+      "file": "11323.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.719344,
+      "latency_ms": 26.12,
+      "correct": true
+    },
+    {
+      "file": "11433.jpg",
+      "true_label": "dog",
+      "predicted_label": "dog",
+      "confidence": 0.748252,
+      "latency_ms": 25.81,
+      "correct": true
+    },
+    {
+      "file": "10006.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.640903,
+      "latency_ms": 19.72,
+      "correct": true
+    },
+    {
+      "file": "4110.jpg",
+      "true_label": "dog",
+      "predicted_label": "dog",
+      "confidence": 0.613249,
+      "latency_ms": 23.56,
+      "correct": true
+    },
+    {
+      "file": "11495.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.656689,
+      "latency_ms": 24.08,
+      "correct": true
+    },
+    {
+      "file": "3603.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.508062,
+      "latency_ms": 30.45,
+      "correct": false
+    },
+    {
+      "file": "2062.jpg",
+      "true_label": "dog",
+      "predicted_label": "dog",
+      "confidence": 0.622097,
+      "latency_ms": 23.72,
+      "correct": true
+    },
+    {
+      "file": "8911.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.588625,
+      "latency_ms": 25.91,
+      "correct": true
+    },
+    {
+      "file": "2721.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.671876,
+      "latency_ms": 22.74,
+      "correct": false
+    },
+    {
+      "file": "6716.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.743018,
+      "latency_ms": 15.93,
+      "correct": false
+    },
+    {
+      "file": "8003.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.66116,
+      "latency_ms": 27.79,
+      "correct": true
+    },
+    {
+      "file": "4904.jpg",
+      "true_label": "cat",
+      "predicted_label": "dog",
+      "confidence": 0.520849,
+      "latency_ms": 18.06,
+      "correct": false
+    },
+    {
+      "file": "1388.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.616612,
+      "latency_ms": 26.28,
+      "correct": false
+    },
+    {
+      "file": "11440.jpg",
+      "true_label": "dog",
+      "predicted_label": "dog",
+      "confidence": 0.750348,
+      "latency_ms": 25.08,
+      "correct": true
+    },
+    {
+      "file": "3328.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.593819,
+      "latency_ms": 22.85,
+      "correct": false
+    },
+    {
+      "file": "5077.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.576472,
+      "latency_ms": 21.98,
+      "correct": false
+    },
+    {
+      "file": "9650.jpg",
+      "true_label": "dog",
+      "predicted_label": "dog",
+      "confidence": 0.752301,
+      "latency_ms": 23.64,
+      "correct": true
+    },
+    {
+      "file": "9035.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.786724,
+      "latency_ms": 21.12,
+      "correct": false
+    },
+    {
+      "file": "10540.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.702466,
+      "latency_ms": 23.02,
+      "correct": true
+    },
+    {
+      "file": "9007.jpg",
+      "true_label": "cat",
+      "predicted_label": "dog",
+      "confidence": 0.512972,
+      "latency_ms": 21.29,
+      "correct": false
+    },
+    {
+      "file": "4400.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.646942,
+      "latency_ms": 26.57,
+      "correct": false
+    },
+    {
+      "file": "8893.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.640234,
+      "latency_ms": 22.47,
+      "correct": true
+    },
+    {
+      "file": "11539.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.596215,
+      "latency_ms": 20.74,
+      "correct": false
+    },
+    {
+      "file": "10301.jpg",
+      "true_label": "dog",
+      "predicted_label": "cat",
+      "confidence": 0.57604,
+      "latency_ms": 24.32,
+      "correct": false
+    },
+    {
+      "file": "9830.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.645471,
+      "latency_ms": 22.34,
+      "correct": true
+    },
+    {
+      "file": "5195.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.671622,
+      "latency_ms": 24.78,
+      "correct": true
+    },
+    {
+      "file": "4870.jpg",
+      "true_label": "dog",
+      "predicted_label": "dog",
+      "confidence": 0.608434,
+      "latency_ms": 23.68,
+      "correct": true
+    },
+    {
+      "file": "3543.jpg",
+      "true_label": "dog",
+      "predicted_label": "dog",
+      "confidence": 0.978072,
+      "latency_ms": 28.93,
+      "correct": true
+    },
+    {
+      "file": "10542.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.52405,
+      "latency_ms": 26.07,
+      "correct": true
+    },
+    {
+      "file": "6281.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.526527,
+      "latency_ms": 22.03,
+      "correct": true
+    },
+    {
+      "file": "960.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.57584,
+      "latency_ms": 25.24,
+      "correct": true
+    },
+    {
+      "file": "1775.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.549099,
+      "latency_ms": 24.16,
+      "correct": true
+    },
+    {
+      "file": "3072.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.614522,
+      "latency_ms": 23.07,
+      "correct": true
+    },
+    {
+      "file": "11814.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.78584,
+      "latency_ms": 61.68,
+      "correct": true
+    },
+    {
+      "file": "4680.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.61384,
+      "latency_ms": 37.78,
+      "correct": true
+    },
+    {
+      "file": "1732.jpg",
+      "true_label": "dog",
+      "predicted_label": "dog",
+      "confidence": 0.811719,
+      "latency_ms": 33.39,
+      "correct": true
+    },
+    {
+      "file": "7051.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.674449,
+      "latency_ms": 82.16,
+      "correct": true
+    },
+    {
+      "file": "11092.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.60911,
+      "latency_ms": 33.47,
+      "correct": true
+    },
+    {
+      "file": "5345.jpg",
+      "true_label": "dog",
+      "predicted_label": "dog",
+      "confidence": 0.545085,
+      "latency_ms": 30.52,
+      "correct": true
+    },
+    {
+      "file": "11409.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.5911,
+      "latency_ms": 28.07,
+      "correct": true
+    },
+    {
+      "file": "6775.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.713186,
+      "latency_ms": 32.95,
+      "correct": true
+    },
+    {
+      "file": "5988.jpg",
+      "true_label": "cat",
+      "predicted_label": "cat",
+      "confidence": 0.636382,
+      "latency_ms": 31.77,
+      "correct": true
+    },
+    {
+      "file": "7919.jpg",
+      "true_label": "dog",
+      "predicted_label": "dog",
+      "confidence": 0.611847,
+      "latency_ms": 28.25,
+      "correct": true
+    }
+  ]
+}
