@@ -96,7 +96,7 @@ git commit -m "Task 9 complete"
 | 8.6 | Preflight: Docker readiness | DONE | Agent |
 | 9 | Build the Docker image | **TODO** | Agent |
 | 10 | Run container, verify prediction | DONE — /health true; 2 predicts OK | Agent |
-| 11 | Create GitHub repo + push (first push) | **TODO** | `[NEEDS HUMAN]` + Agent |
+| 11 | Create GitHub repo + push (first push) | DONE — pushed to gh: karthikreddygudur-png/mlops2 | Agent |
 | 12 | Verify CI pipeline is green | **TODO** | Agent |
 | 13 | Register self-hosted runner | **TODO** | `[NEEDS HUMAN]` |
 | 14 | Verify CD deploys + smoke test | **TODO** | Agent |
