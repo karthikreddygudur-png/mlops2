@@ -1,7 +1,7 @@
 services:
   api:
     # CI publishes this tag; override IMAGE to run a locally built image.
-    image: ${IMAGE:-ghcr.io/OWNER/catdog-api:latest}
+    image: ${IMAGE:-ghcr.io/karthikreddygudur-png/mlops2:latest}
     container_name: catdog-api
     build:
       context: .

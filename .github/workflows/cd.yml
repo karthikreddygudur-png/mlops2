@@ -11,15 +11,22 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   deploy:
     name: Deploy & smoke test
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: self-hosted
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
+
+      - name: Resolve image reference
+        id: image
+        # Container registries reject uppercase, but repository names may contain it.
+        run: echo "ref=${REGISTRY}/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]'):latest" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
@@ -27,18 +34,24 @@ jobs:
       - name: Pull the newly published image
         run: docker compose pull api
         env:
-          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          IMAGE: ${{ steps.image.outputs.ref }}
 
       - name: Deploy
         run: docker compose up -d --remove-orphans
         env:
-          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          IMAGE: ${{ steps.image.outputs.ref }}
+
+      - name: Install smoke test dependencies
+        # The runner's system Python has no project virtualenv on PATH.
+        run: python -m pip install --quiet --disable-pip-version-check requests pillow
 
       - name: Smoke test
         run: python scripts/smoke_test.py --base-url http://localhost:8000
 
       - name: Roll back on failure
         if: failure()
+        env:
+          IMAGE: ${{ steps.image.outputs.ref }}
         run: |
           echo "Smoke test failed - rolling back"
           docker compose logs --tail 50 api || true
